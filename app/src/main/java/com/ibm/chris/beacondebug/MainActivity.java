@@ -25,6 +25,10 @@ import static java.lang.Double.NaN;
 
 public class MainActivity extends AppCompatActivity {
 
+    BluetoothManager bluetoothManager;
+    BluetoothAdapter bluetoothAdapter;
+    BluetoothLeScanner bluetoothLeScanner;
+
     TextView beaconRssiView;
     EditText beaconIdView;
     long last = System.currentTimeMillis();
@@ -51,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
                         "ms\nhighest:" + higest_diff +
                         "ms\nreadings:" + readings;
                 rssi = 0;
+                if(diff>10000) {
+                    bluetoothLeScanner.stopScan(scanCallback);
+
+                }
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -65,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
     private void startBluetoothScan(){
         //requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         // setup bluetooth
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        final BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-        BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
         // wait for bluetooth to be ready
         while(bluetoothLeScanner == null) {
             try {
@@ -77,21 +85,29 @@ public class MainActivity extends AppCompatActivity {
                 Thread.currentThread().interrupt();
             }
         }
+        scanBluetooth();
+    }
 
+    ScanCallback scanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, ScanResult result) {
+            if(result.getDevice().getAddress().equals(beaconIdView.getText().toString())) {
+                last = System.currentTimeMillis();
+                rssi = result.getRssi();
+                readings++;
+            }
+        }
+    };
+
+    private void scanBluetooth() {
         ScanSettings settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .setReportDelay(0)
                 .build();
         List<ScanFilter> filters = new ArrayList<>();
-        bluetoothLeScanner.startScan(filters, settings, new ScanCallback() {
-            @Override
-            public void onScanResult(int callbackType, ScanResult result) {
-                if(result.getDevice().getAddress().equals(beaconIdView.getText().toString())) {
-                    last = System.currentTimeMillis();
-                    rssi = result.getRssi();
-                    readings++;
-                }
-            }
-        });
+        bluetoothLeScanner.startScan(filters, settings, scanCallback);
     }
+
+
 }
 
