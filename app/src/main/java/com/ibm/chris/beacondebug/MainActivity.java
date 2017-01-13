@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                final String text = "RSSI:" + Integer.toString(rssi) + ", frq: " + Long.toString(System.currentTimeMillis() - last) + "ms readings:" + readings;
+                final String text = "RSSI:" + Integer.toString(rssi) + "\nfrq: " + Long.toString(System.currentTimeMillis() - last) + "ms\nreadings:" + readings;
+                rssi = 0;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-        }, 20, 20);
+        }, 100, 100);
     }
 
 
