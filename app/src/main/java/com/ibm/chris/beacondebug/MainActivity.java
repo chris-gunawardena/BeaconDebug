@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     EditText beaconIdView;
     long last = System.currentTimeMillis();
     int rssi = 0;
+    int readings = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                final String text = "RSSI:" + Integer.toString(rssi) + ", frq: " + Long.toString(System.currentTimeMillis() - last) + "ms";
+                final String text = "RSSI:" + Integer.toString(rssi) + ", frq: " + Long.toString(System.currentTimeMillis() - last) + "ms readings:" + readings;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 if(result.getDevice().getAddress().equals(beaconIdView.getText().toString())) {
                     last = System.currentTimeMillis();
                     rssi = result.getRssi();
+                    readings++;
                 }
             }
         });
